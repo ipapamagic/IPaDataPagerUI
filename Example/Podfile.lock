@@ -1,0 +1,16 @@
+PODS:
+  - IPaDataPagerUI (0.1.0)
+
+DEPENDENCIES:
+  - IPaDataPagerUI (from `../`)
+
+EXTERNAL SOURCES:
+  IPaDataPagerUI:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  IPaDataPagerUI: 0823cf5f21642c937c204bca72b31ea48d5fe783
+
+PODFILE CHECKSUM: ae7ff397c97a936d267cca13bf13f61ff3fa614e
+
+COCOAPODS: 1.11.3
