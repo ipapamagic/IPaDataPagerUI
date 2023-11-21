@@ -33,7 +33,7 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType
         super.init()
         
     }
-    public func resetLoading() {
+    open func resetLoading() {
         self.loadingPage = 0
         self.currentPage = 0
         self.totalPage = 1
