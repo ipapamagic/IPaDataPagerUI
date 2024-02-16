@@ -7,16 +7,19 @@
 
 import UIKit
 
-public protocol IPaDataPagerUIHasLoadType {
-
+public protocol IPaDataPagerItemType {
+    associatedtype SectionType
     var isLoadingType:Bool { get }
-    
+    static func createLoadingItem(for section:SectionType)  -> Self
 }
 
-open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType,CellType>: NSObject where SectionIdentifierType:Hashable,ItemIdentifierType:Hashable,ItemIdentifierType:IPaDataPagerUIHasLoadType {
+open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType,CellType>: NSObject where SectionIdentifierType:Hashable,ItemIdentifierType:Hashable,ItemIdentifierType:IPaDataPagerItemType {
+    typealias SectionType = SectionIdentifierType
     var totalPage:Int = 1
     var currentPage:Int = 0
     var loadingPage:Int = 0
+    var dataItemIdentifiers = [ItemIdentifierType]()
+    var loadingIdentifier:ItemIdentifierType?
     public private(set) var section:SectionIdentifierType
     public struct PageInfo {
         var totalPage:Int
@@ -31,12 +34,26 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType
     init(_ section:SectionIdentifierType)  {
         self.section = section
         super.init()
-        
     }
     open func resetLoading() {
         self.loadingPage = 0
         self.currentPage = 0
         self.totalPage = 1
+        
+        var items = self.dataItemIdentifiers
+        if let loadingIdentifier = loadingIdentifier {
+            items.append(loadingIdentifier)
+            self.loadingIdentifier = nil
+        }
+        if !items.isEmpty {
+            var snapshot = self.currentSnapshot()
+            snapshot.deleteItems(items)
+            self.dataItemIdentifiers.removeAll()
+            self.apply(snapshot:snapshot)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.insertLoadingItem()
+        }
     }
     public func provideCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> CellType {
         if itemIdentifier.isLoadingType {
@@ -45,7 +62,24 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType
                 self.loadingPage = nextPage
                 self.loadData(nextPage) { pageInfo in
                     if pageInfo.currentPage == self.loadingPage {
-                        self.onInsert(pageInfo,loadingItentifier: itemIdentifier)
+                        self.totalPage = pageInfo.totalPage
+                        self.currentPage = pageInfo.currentPage
+                        self.loadingPage = 0
+                        
+                        var snapshot = self.currentSnapshot()
+                        snapshot.deleteItems([itemIdentifier])
+                        self.loadingIdentifier = nil
+                        if pageInfo.datas.count > 0 {
+                            snapshot.appendItems(pageInfo.datas, toSection: self.section)
+                            self.dataItemIdentifiers.append(contentsOf: pageInfo.datas)
+                        }
+                        if self.currentPage < self.totalPage {
+                            var loadingItem = ItemIdentifierType.createLoadingItem(for: self.section as! ItemIdentifierType.SectionType)
+                            self.loadingIdentifier = loadingItem
+                            snapshot.appendItems([loadingItem], toSection: self.section)
+                        }
+                        self.apply(snapshot: snapshot)
+                        
                     }
                 }
             }
@@ -55,23 +89,29 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType
             return self.provideDataCell(view, indexPath: indexPath, itemIdentifier: itemIdentifier)
         }
     }
+    func insertLoadingItem() {
+        var snapshot = self.currentSnapshot()
+        var loadingItem = ItemIdentifierType.createLoadingItem(for: self.section as! ItemIdentifierType.SectionType)
+        self.loadingIdentifier = loadingItem
+        snapshot.appendItems([loadingItem], toSection: self.section)
+        self.apply(snapshot: snapshot)
+    }
     func provideLoadingCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> CellType {
         fatalError("need implement provideLoadingCell()")
     }
     func provideDataCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> CellType {
         fatalError("need implement provideDataCell()")
     }
-    func onInsert(_ pageInfo:PageInfo,loadingItentifier:ItemIdentifierType) {
-        self.totalPage = pageInfo.totalPage
-        self.currentPage = pageInfo.currentPage
-        self.loadingPage = 0
         
-    }
-        
-    open func createLoadingType(_ page:Int) -> ItemIdentifierType {
-        fatalError("need implement createLoadingType")
-    }
     open func loadData(_ page:Int,complete:@escaping (PageInfo)->()) {
         fatalError("need implement loadData(_:complete:)")
     }
+    func currentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
+        fatalError("need implement currentSnapshot(_:complete:)")
+    }
+    func apply(snapshot:NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType>) {
+        fatalError("need implement applySnapshot(_:complete:)")
+    }
+   
+
 }
