@@ -55,33 +55,36 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType
             self.insertLoadingItem()
         }
     }
-    public func provideCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> CellType {
+    public func provideCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType)  -> CellType {
         if itemIdentifier.isLoadingType {
             let nextPage = self.currentPage + 1
             if self.loadingPage == 0 {
                 self.loadingPage = nextPage
-                self.loadData(nextPage) { pageInfo in
-                    if pageInfo.currentPage == self.loadingPage {
-                        self.totalPage = pageInfo.totalPage
-                        self.currentPage = pageInfo.currentPage
-                        self.loadingPage = 0
-                        
-                        var snapshot = self.currentSnapshot()
-                        snapshot.deleteItems([itemIdentifier])
-                        self.loadingIdentifier = nil
-                        if pageInfo.datas.count > 0 {
-                            snapshot.appendItems(pageInfo.datas, toSection: self.section)
-                            self.dataItemIdentifiers.append(contentsOf: pageInfo.datas)
+                Task {
+                    let pageInfo = await self.loadData(nextPage)
+                    DispatchQueue.main.async {
+                        if pageInfo.currentPage == self.loadingPage {
+                            self.totalPage = pageInfo.totalPage
+                            self.currentPage = pageInfo.currentPage
+                            self.loadingPage = 0
+                            
+                            var snapshot = self.currentSnapshot()
+                            snapshot.deleteItems([itemIdentifier])
+                            self.loadingIdentifier = nil
+                            if pageInfo.datas.count > 0 {
+                                snapshot.appendItems(pageInfo.datas, toSection: self.section)
+                                self.dataItemIdentifiers.append(contentsOf: pageInfo.datas)
+                            }
+                            if self.currentPage < self.totalPage {
+                                var loadingItem = ItemIdentifierType.createLoadingItem(for: self.section as! ItemIdentifierType.SectionType)
+                                self.loadingIdentifier = loadingItem
+                                snapshot.appendItems([loadingItem], toSection: self.section)
+                            }
+                            self.apply(snapshot: snapshot)
                         }
-                        if self.currentPage < self.totalPage {
-                            var loadingItem = ItemIdentifierType.createLoadingItem(for: self.section as! ItemIdentifierType.SectionType)
-                            self.loadingIdentifier = loadingItem
-                            snapshot.appendItems([loadingItem], toSection: self.section)
-                        }
-                        self.apply(snapshot: snapshot)
-                        
                     }
                 }
+               
             }
             return self.provideLoadingCell(view, indexPath: indexPath, itemIdentifier: itemIdentifier)
         }
@@ -102,10 +105,12 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType,ContainerType
     func provideDataCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> CellType {
         fatalError("need implement provideDataCell()")
     }
-        
-    open func loadData(_ page:Int,complete:@escaping (PageInfo)->()) {
-        fatalError("need implement loadData(_:complete:)")
+    open func loadData(_ page:Int) async  -> PageInfo {
+        fatalError("need implement loadData(_:)")
     }
+//    open func loadData(_ page:Int,complete:@escaping (PageInfo)->()) {
+//        fatalError("need implement loadData(_:complete:)")
+//    }
     func currentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
         fatalError("need implement currentSnapshot(_:complete:)")
     }
