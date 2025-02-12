@@ -49,12 +49,17 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType: Sendable,Con
             var snapshot = self.currentSnapshot()
             snapshot.deleteItems(items)
             self.dataItemIdentifiers.removeAll()
+            if insertLoadingItem {
+                let loadingItem = self.createLoadingItem()
+                snapshot.appendItems([loadingItem], toSection: self.section)
+            }
             self.apply(snapshot:snapshot)
         }
-        if insertLoadingItem {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.insertLoadingItem()
-            }
+        else if insertLoadingItem {
+            var snapshot = self.currentSnapshot()
+            let loadingItem = self.createLoadingItem()
+            snapshot.appendItems([loadingItem], toSection: self.section)
+            self.apply(snapshot: snapshot)
         }
     }
     public func provideCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType)  -> CellType {
@@ -68,13 +73,12 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType: Sendable,Con
             return self.provideDataCell(view, indexPath: indexPath, itemIdentifier: itemIdentifier)
         }
     }
-    func insertLoadingItem() {
-        var snapshot = self.currentSnapshot()
+    public func createLoadingItem() -> ItemIdentifierType {
         let loadingItem = ItemIdentifierType.createLoadingItem(for: self.section as! ItemIdentifierType.SectionType)
         self.loadingIdentifier = loadingItem
-        snapshot.appendItems([loadingItem], toSection: self.section)
-        self.apply(snapshot: snapshot)
+        return loadingItem
     }
+    
     func provideLoadingCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> CellType {
         fatalError("need implement provideLoadingCell()")
     }
