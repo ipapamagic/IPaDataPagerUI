@@ -20,11 +20,11 @@ open class IPaCollectionViewDataPagerUI<SectionIdentifierType,ItemIdentifierType
     open override func provideDataCell(_ collectionView:UICollectionView,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> UICollectionViewCell {
         fatalError("need implement provideDataCell")
     }
-    override func currentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
+    override func createCurrentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
         return self.dataSource.snapshot()
     }
-    override func apply(snapshot:NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType>) {
-        self.dataSource.apply(snapshot)
+    override func applySnapshot() {
+        self.dataSource.apply(self.currentSnapshot)
     }
     
     

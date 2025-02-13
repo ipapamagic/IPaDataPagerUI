@@ -22,11 +22,11 @@ open class IPaTableViewDataPagerUI<SectionIdentifierType,ItemIdentifierType>: IP
     open override func provideDataCell(_ tableView:UITableView,indexPath:IndexPath,itemIdentifier:ItemIdentifierType) -> UITableViewCell {
         fatalError("need implement provideDataCell")
     }
-    override func currentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
+    override func createCurrentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
         return self.dataSource.snapshot()
     }
-    override func apply(snapshot:NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType>) {
-        self.dataSource.apply(snapshot)
+    override func applySnapshot() {
+        self.dataSource.apply(self.currentSnapshot)
     }
 
 }
