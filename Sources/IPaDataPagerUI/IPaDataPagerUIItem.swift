@@ -7,7 +7,7 @@
 
 import UIKit
 
-public struct IPaDataPagerUIItem<SectionIdentifierType:Hashable>: Hashable,IPaDataPagerItemType {
+public struct IPaDataPagerUIItem<SectionIdentifierType:Hashable, DataType: Sendable>: Hashable,IPaDataPagerItemType {
     
     
     public typealias SectionType = SectionIdentifierType
@@ -22,14 +22,14 @@ public struct IPaDataPagerUIItem<SectionIdentifierType:Hashable>: Hashable,IPaDa
         return self.index < 0
     }
     public var index:Int
-    public var data:Any?
+    public var data:DataType?
     public var section :SectionIdentifierType
-    public init(section:SectionIdentifierType,index: Int, data: Any? = nil) {
+    public init(section:SectionIdentifierType,index: Int, data: DataType? = nil) {
         self.index = index
         self.section = section
         self.data = data
     }
-    public static func createLoadingItem(for section: SectionIdentifierType) -> IPaDataPagerUIItem<SectionIdentifierType> {
+    public static func createLoadingItem(for section: SectionIdentifierType) -> IPaDataPagerUIItem<SectionIdentifierType,DataType> {
         return IPaDataPagerUIItem(section:section, index: -1, data: nil)
     }
     
