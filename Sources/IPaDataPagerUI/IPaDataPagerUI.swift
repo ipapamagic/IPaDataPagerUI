@@ -40,7 +40,7 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType: Sendable,Con
         self.currentPage = 0
         self.totalPage = 1
         self.currentSnapshot = self.createCurrentSnapshot()
-        var items = self.itemIdentifiers(inSection: self.section)
+        let items = self.itemIdentifiers(inSection: self.section)
         self.loadingIdentifier = nil
         if !items.isEmpty {
             self.deleteItems(items)

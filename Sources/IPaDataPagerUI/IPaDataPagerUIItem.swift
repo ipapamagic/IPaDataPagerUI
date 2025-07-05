@@ -7,7 +7,7 @@
 
 import UIKit
 
-public struct IPaDataPagerUIItem<SectionIdentifierType:Hashable, DataType: Sendable>: Hashable,IPaDataPagerItemType {
+public struct IPaDataPagerUIItem<SectionIdentifierType:Hashable & Sendable, DataType: Sendable>: Hashable,IPaDataPagerItemType,Sendable {
     
     
     public typealias SectionType = SectionIdentifierType
