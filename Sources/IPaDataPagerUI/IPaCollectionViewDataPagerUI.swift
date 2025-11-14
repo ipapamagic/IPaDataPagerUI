@@ -23,7 +23,7 @@ open class IPaCollectionViewDataPagerUI<SectionIdentifierType,ItemIdentifierType
     override func createCurrentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
         return self.dataSource.snapshot()
     }
-    override func applySnapshot() {
+    open override func applySnapshot() {
         self.dataSource.apply(self.currentSnapshot)
     }
     

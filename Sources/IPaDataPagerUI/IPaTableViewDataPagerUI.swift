@@ -25,7 +25,7 @@ open class IPaTableViewDataPagerUI<SectionIdentifierType,ItemIdentifierType>: IP
     override func createCurrentSnapshot() -> NSDiffableDataSourceSnapshot<SectionIdentifierType,ItemIdentifierType> {
         return self.dataSource.snapshot()
     }
-    override func applySnapshot() {
+    open override func applySnapshot() {
         self.dataSource.apply(self.currentSnapshot)
     }
 

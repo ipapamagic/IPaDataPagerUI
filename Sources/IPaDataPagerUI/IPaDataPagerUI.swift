@@ -72,7 +72,7 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType: Sendable,Con
     }
     public func provideCell(_ view:ContainerType,indexPath:IndexPath,itemIdentifier:ItemIdentifierType)  -> CellType {
         if itemIdentifier.isLoadingType {
-            Task {
+            Task { @MainActor in
                 await loadNextPage()
             }
             return self.provideLoadingCell(view, indexPath: indexPath, itemIdentifier: itemIdentifier)
@@ -99,7 +99,7 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType: Sendable,Con
         let nextPage = self.currentPage + 1
         if self.loadingPage == 0 {
             self.loadingPage = nextPage
-            self.currentSnapshot = self.createCurrentSnapshot()
+            
             let pageInfo = await self.loadData(nextPage)
             await withCheckedContinuation { continuation in
                 DispatchQueue.main.async {  
@@ -107,7 +107,7 @@ open class IPaDataPagerUI<SectionIdentifierType,ItemIdentifierType: Sendable,Con
                         self.totalPage = pageInfo.totalPage
                         self.currentPage = pageInfo.currentPage
                         self.loadingPage = 0
-                        
+                        self.currentSnapshot = self.createCurrentSnapshot()
                         if let itemIdentifier = self.loadingIdentifier {
                             self.currentSnapshot.deleteItems([itemIdentifier])
                             self.loadingIdentifier = nil
